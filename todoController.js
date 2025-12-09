@@ -1,51 +1,60 @@
-const todos = []
+const Todo = require("./todo");
 
-// get all todos
-
-exports.getAllTodos = (req, res) => {
+exports.getAllTodos = async (req, res) => {
+  try {
+    const todos = await Todo.find();
     res.send(todos);
-}
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error retrieving todos", error });
+  }
+};
 
-exports.createTodo = (req, res) => {
-    const { title, description} = req.body;
-    
-    todos.push({
-        id: new Date().getTime().toString(),
-        title,
-        description
-    })
+exports.createTodo = async (req, res) => {
+  try {
+    const { title, description } = req.body;
+
+    const newTodo = await Todo.create({ title, description });
+    await newTodo.save();
 
     res.send({ message: "Todo created successfully" });
+  } catch (error) {
+    res.status(500).send({ message: "Error creating todo", error });
+  }
+};
 
-}
-
-exports.getTodoById = (req, res) => {
+exports.getTodoById = async (req, res) => {
+  try {
     const { id } = req.params;
 
-    const todo = todos.find((t) => t.id === id);
+    const todo = await Todo.findById(id);
 
     if (!todo) {
-        return res.send({ message: "Todo not found" });
+      return res.send({ message: "Todo not found" });
     }
 
     res.send(todo);
-}
+  } catch (error) {
+    res.status(500).send({ message: "Error retrieving todo", error });
+  }
+};
 
-exports.updateTodoById = (req, res) => {
+exports.updateTodoById = async (req, res) => {
+  try {
     const { id } = req.params;
     const { title, description } = req.body;
 
-    const todoIndex = todos.findIndex((t) => t.id === id);
-
-    if (todoIndex === -1) {
-        return res.send({ message: "Todo not found" });
+    const updatedTodo = await Todo.findByIdAndUpdate(
+      id,
+      { title, description },
+      { new: true }
+    );
+    if (!updatedTodo) {
+      return res.status(404).send({ message: "Todo not found" });
     }
 
-    todos[todoIndex] = {
-        id, 
-        title, 
-        description
-    }
-
-    res.send({ message: "Todo updated successfully", todo: todos[todoIndex] });
-}
+    res.send({ message: "Todo updated successfully", todo: updatedTodo });
+  } catch (error) {
+    res.status(500).send({ message: "Error updating todo", error });
+  }
+};
