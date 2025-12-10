@@ -1,8 +1,8 @@
+require("dotenv").config();
 const express = require("express");
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const routes = require("./routes")
 const mongoose = require("mongoose")
-require("dotenv").config();
 
 mongoose.connect(process.env.MONGODB_URI).then(() => {
     console.log("Connected to MongoDB");
